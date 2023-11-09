@@ -1,18 +1,19 @@
+import os
+from os.path import join, dirname
+from dotenv import load_dotenv
+
 from flask import Flask, request, render_template, jsonify, redirect, url_for
 from pymongo import MongoClient
 import requests
 from datetime import datetime
 from bson import ObjectId
-import os
-from os.path import join, dirname
-from dotenv import load_dotenv
+
 
 dotenv_path = join(dirname(__file__), '.env')
 load_dotenv(dotenv_path)
 
 MONGODB_URI = os.environ.get("MONGODB_URI")
 DB_NAME =  os.environ.get("DB_NAME")
-API_KEY = os.environ.get("API_KEY")
 
 client = MongoClient(MONGODB_URI)
 db = client[DB_NAME]
@@ -33,6 +34,7 @@ def main():
             })
     msg = request.args.get('msg')
     return render_template('index.html', words=words, msg=msg)
+
 
 @app.route('/detail/<keyword>')
 def detail(keyword):
@@ -82,6 +84,18 @@ def delete_word():
         'result': 'success',
         'msg': f'the word, {word}, was delete',
     })
+
+@app.route('/error')
+def errornotfound():
+    keyword = request.args.get('keyword')
+    return render_template('errornotfound.html', keyword=keyword)
+
+@app.route('/errorsuges')
+def errorsuges():
+    keyword = request.args.get('keyword')
+    sugestions = request.args.get('sugestions')
+    sugestions_list = sugestions.split(',')
+    return render_template('errorsuges.html', sugestions=sugestions_list, keyword=keyword)
 
 @app.route('/api/get_exs', methods=['GET'])
 def get_exs():
